@@ -155,7 +155,7 @@ def main():
 		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K)]
 		U = np.hstack((F, np.round(U, 7)))
 		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
-			header="\t".join(h), comment="")
+			header="\t".join(h), comments="")
 
 
 
