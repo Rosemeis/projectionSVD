@@ -1,0 +1,7 @@
+name: projection
+channels:
+  - default
+dependencies:
+  - python
+  - cython
+  - numpy
