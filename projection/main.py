@@ -41,6 +41,8 @@ parser.add_argument("--raw", action="store_true",
 	help="Only output projections without FID/IID")
 parser.add_argument("--batch", metavar="INT", type=int,
 	help="Process SNPs in batches of desired size")
+parser.add_argument("--freqs-col", metavar="INT", type=int,
+	default=4, help="Column number of frequencies in afreq file")
 
 ##### projectionSVD #####
 def main():
@@ -85,7 +87,7 @@ def main():
 	# Load smaller inputs
 	S = np.loadtxt(args.eigvals, dtype=float)
 	V = np.loadtxt(args.loadings, dtype=float)
-	f = np.loadtxt(args.freqs, dtype=float, usecols=4)
+	f = np.loadtxt(args.freqs, dtype=float, usecols=args.freqs_col)
 	assert S.shape[0] == V.shape[1], "Files doesn't match!"
 	assert V.shape[0] == M, "Number of sites doesn't match (--loadings)!"
 	assert f.shape[0] == M, "Number of sites doesn't match (--freqs)!"
