@@ -104,9 +104,9 @@ def main():
 	print(f"\rLoaded {N} samples and {M} SNPs.")
 
 	# Transform eigenvalues to singular values and multiply on V
-	S = np.sqrt(S)*M
 	if args.pcaone:
 		S /= 2.0
+	S = np.sqrt(S)*M
 	V *= (1.0/S)
 	del S
 
