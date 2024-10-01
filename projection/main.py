@@ -41,8 +41,8 @@ parser.add_argument("--raw", action="store_true",
 	help="Only output projections without FID/IID")
 parser.add_argument("--batch", metavar="INT", type=int,
 	help="Process SNPs in batches of desired size")
-parser.add_argument("--freqs-col", metavar="INT", type=int,
-	default=4, help="Column number of frequencies in afreq file")
+parser.add_argument("--freqs-col", metavar="INT", type=int, default=5,
+	help="Column number for frequencies (.afreq)")
 
 ##### projectionSVD #####
 def main():
