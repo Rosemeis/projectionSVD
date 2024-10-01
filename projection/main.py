@@ -106,7 +106,7 @@ def main():
 	# Transform eigenvalues to singular values and multiply on V
 	S = np.sqrt(S)*M
 	if args.pcaone:
-		S *= 2.0
+		S /= 2.0
 	V *= (1.0/S)
 	del S
 
