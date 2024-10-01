@@ -26,7 +26,7 @@ cpdef void expandGeno(const unsigned char[:,::1] B, unsigned char[:,::1] G, \
 					break
 
 # Standardize full genotype matrix
-cpdef void standardizeE(double E[:,::1] , const unsigned char[:,::1] G, \
+cpdef void standardizeE(double[:,::1] E, const unsigned char[:,::1] G, \
 		const double[::1] f, const double[::1] d, const int t) noexcept nogil:
 	cdef:
 		int M = E.shape[0]
@@ -40,7 +40,7 @@ cpdef void standardizeE(double E[:,::1] , const unsigned char[:,::1] G, \
 				E[j,i] = (G[j,i] - 2.0*f[j])/d[j]
 
 # Standardize batched genotype matrix
-cpdef void standardizeL(double E[:,::1] , const unsigned char[:,::1] G, \
+cpdef void standardizeL(double[:,::1] E, const unsigned char[:,::1] G, \
 		const double[::1] f, const double[::1] d, const int m, const int t) \
 		noexcept nogil:
 	cdef:
