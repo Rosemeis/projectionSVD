@@ -29,7 +29,7 @@ parser.add_argument("-s", "--eigvals", metavar="FILE",
 	help="File path to eigenvalues")
 parser.add_argument("-v", "--loadings", metavar="FILE",
 	help="File path to SNP loadings")
-parser.add_argument("-f", "--afreq", metavar="FILE",
+parser.add_argument("-f", "--freqs", metavar="FILE",
 	help="File path to discovery allele frequencies from PLINK")
 parser.add_argument("-t", "--threads", metavar="INT", type=int, default=1,
 	help="Number of threads (1)")
@@ -55,7 +55,7 @@ def main():
 	assert args.bfile is not None, "No input data (--bfile)!"
 	assert args.eigvals is not None, "No eigenvalues provided (--eigvals)!"
 	assert args.loadings is not None, "No SNP loadings provided (--loadings)!"
-	assert args.afreq is not None, "No allele frequencies provided (--freqs)!"
+	assert args.freqs is not None, "No allele frequencies provided (--freqs)!"
 
 	# Control threads of external numerical libraries
 	os.environ["MKL_NUM_THREADS"] = str(args.threads)
@@ -85,10 +85,10 @@ def main():
 	# Load smaller inputs
 	S = np.loadtxt(args.eigvals, dtype=float)
 	V = np.loadtxt(args.loadings, dtype=float)
-	f = np.loadtxt(args.afreq, dtype=float, usecols=4)
+	f = np.loadtxt(args.freqs, dtype=float, usecols=4)
 	assert S.shape[0] == V.shape[1], "Files doesn't match!"
 	assert V.shape[0] == M, "Number of sites doesn't match (--loadings)!"
-	assert f.shape[0] == M, "Number of sites doesn't match (--afreq)!"
+	assert f.shape[0] == M, "Number of sites doesn't match (--freqs)!"
 	K = S.shape[0]
 
 	# Read .bed file
