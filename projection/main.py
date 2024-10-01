@@ -35,8 +35,8 @@ parser.add_argument("-t", "--threads", metavar="INT", type=int, default=1,
 	help="Number of threads (1)")
 parser.add_argument("-o", "--out", metavar="OUTPUT", default="projection",
 	help="Prefix output name")
-parser.add_argument("--denom", metavar="INT", type=int,
-	default=0, help="Denominator (0/1/2)")
+parser.add_argument("--pcaone", action="store_true",
+	help="Change scales to fit PCAone output")
 parser.add_argument("--raw", action="store_true",
 	help="Only output projections without FID/IID")
 parser.add_argument("--batch", metavar="INT", type=int,
@@ -109,18 +109,19 @@ def main():
 	del S
 
 	# Specify denominator
-	if args.denom == 0:
+	if args.pcaone:
 		d = np.sqrt(f*(1-f))
-	elif args.denom == 1:
-		d = np.sqrt(2*f*(1-f))
 	else:
-		d = np.ones(f.shape[0])
+		d = np.sqrt(2*f*(1-f))
 
 	### Perform projection
 	if args.batch is None:
 		# Standardize data
 		E = np.zeros((M, N), dtype=float)
-		functions.standardizeE(E, G, f, d, args.threads)
+		if args.pcaone:
+			functions.standardizeE_hap(E, G, f, d, args.threads)
+		else:
+			functions.standardizeE(E, G, f, d, args.threads)
 		del G
 
 		# Projections
@@ -136,7 +137,10 @@ def main():
 		for l in range(L):
 			if l == (L-1): # Last batch
 				E = np.zeros((M-args.batch, N))
-			functions.standardizeL(E, G, f, d, m, args.threads)
+			if args.pcaone:
+				functions.standardizeL_hap(E, G, f, d, m, args.threads)
+			else:
+				functions.standardizeL(E, G, f, d, m, args.threads)
 			U += np.dot(E.T, V[m:E.shape[0],:])
 		del E, V, f, d
 	
