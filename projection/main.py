@@ -105,6 +105,8 @@ def main():
 
 	# Transform eigenvalues to singular values and multiply on V
 	S = np.sqrt(S)*M
+	if args.pcaone:
+		S *= 2.0
 	V *= (1.0/S)
 	del S
 
@@ -150,10 +152,10 @@ def main():
 		np.savetxt(f"{args.out}.eigvecs", U, fmt="%.7f", delimiter="\t")
 	else:
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
-		h = ["FID", "IID"] + [f"PC{k}" for k in range(1, K)]
+		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K)]
 		U = np.hstack((F, np.round(U, 7)))
 		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
-			header="\t".join(h))
+			header="\t".join(h), comment="")
 
 
 
