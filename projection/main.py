@@ -50,10 +50,10 @@ def main():
 	if len(sys.argv) < 2:
 		parser.print_help()
 		sys.exit()
-	print("--------------------")
+	print("-----------------------")
 	print(f"projectionSVD v0.1")
 	print("by J. Meisner")
-	print("--------------------\n")
+	print("-----------------------\n")
 	assert args.bfile is not None, "No input data (--bfile)!"
 	assert args.eigvals is not None, "No eigenvalues provided (--eigvals)!"
 	assert args.loadings is not None, "No SNP loadings provided (--loadings)!"
@@ -104,7 +104,7 @@ def main():
 	print(f"\rLoaded {N} samples and {M} SNPs.")
 
 	# Transform eigenvalues to singular values and multiply on V
-	S = np.sqrt(S*M)
+	S = np.sqrt(S)*M
 	V *= (1.0/S)
 	del S
 
@@ -116,7 +116,7 @@ def main():
 
 	### Perform projection
 	if args.batch is None:
-		# Standardize data
+		print("Loading full matrix into memory and projecting.")
 		E = np.zeros((M, N), dtype=float)
 		if args.pcaone:
 			functions.standardizeE_hap(E, G, f, d, args.threads)
@@ -128,6 +128,7 @@ def main():
 		U = np.dot(E.T, V)
 		del E, V, f, d
 	else:
+		print("Loading matrix into memory and projecting in batches.")
 		U = np.zeros((N, K))
 		E = np.zeros((args.batch, N))
 
@@ -146,12 +147,13 @@ def main():
 	
 	### Save projections to file
 	if args.raw:
-		np.savetxt(f"{args.out}.eigvecs", U, fmt='%.7f')
+		np.savetxt(f"{args.out}.eigvecs", U, fmt="%.7f", delimiter="\t")
 	else:
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
 		h = ["FID", "IID"] + [f"PC{k}" for k in range(1, K)]
 		U = np.hstack((F, np.round(U, 7)))
-		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", header=h)
+		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
+			header="\t".join(h))
 
 
 
