@@ -65,9 +65,9 @@ cpdef void standardizeL(double[:,::1] E, const unsigned char[:,::1] G, \
 		k = m + j
 		for i in range(N):
 			if G[k,i] == 9:
-				E[k,i] = 0.0
+				E[j,i] = 0.0
 			else:
-				E[k,i] = (G[k,i] - 2.0*f[k])/d[k]
+				E[j,i] = (G[k,i] - 2.0*f[k])/d[k]
 
 # Standardize batched genotype matrix (PCAone format)
 cpdef void standardizeL_pcaone(double[:,::1] E, const unsigned char[:,::1] G, \
@@ -81,6 +81,6 @@ cpdef void standardizeL_pcaone(double[:,::1] E, const unsigned char[:,::1] G, \
 		k = m + j
 		for i in range(N):
 			if G[k,i] == 9:
-				E[k,i] = 0.0
+				E[j,i] = 0.0
 			else:
-				E[k,i] = (G[k,i]/2.0 - f[k])/d[k]		
+				E[j,i] = (G[k,i]/2.0 - f[k])/d[k]		
