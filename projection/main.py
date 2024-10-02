@@ -156,7 +156,7 @@ def main():
 		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs")
 	else:
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
-		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K)]
+		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K+1)]
 		U = np.hstack((F, np.round(U, 7)))
 		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
 			header="\t".join(h), comments="")
