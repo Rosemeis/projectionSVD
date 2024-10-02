@@ -138,6 +138,7 @@ def main():
 		m = 0
 		L = ceil(M/args.batch)
 		for l in range(L):
+			print(f"\rBatch {l+1}/{L}", end="", flush=True)
 			if l == (L-1): # Last batch
 				E = np.zeros((M-args.batch, N))
 			if args.pcaone:
@@ -146,6 +147,7 @@ def main():
 				functions.standardizeL(E, G, f, d, m, args.threads)
 			U += np.dot(E.T, V[m:E.shape[0],:])
 			m += E.shape[0]
+		print("")
 		del E, V, f, d
 	
 	### Save projections to file
