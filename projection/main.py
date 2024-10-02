@@ -41,7 +41,7 @@ parser.add_argument("--raw", action="store_true",
 	help="Only output projections without FID/IID")
 parser.add_argument("--batch", metavar="INT", type=int,
 	help="Process SNPs in batches of desired size")
-parser.add_argument("--freqs-col", metavar="INT", type=int, default=5,
+parser.add_argument("--freqs-col", metavar="INT", type=int, default=6,
 	help="Column number for frequencies (.afreq)")
 
 ##### projectionSVD #####
@@ -87,7 +87,7 @@ def main():
 	# Load smaller inputs
 	S = np.loadtxt(args.eigvals, dtype=float)
 	V = np.loadtxt(args.loadings, dtype=float)
-	f = np.loadtxt(args.freqs, dtype=float, usecols=args.freqs_col)
+	f = np.loadtxt(args.freqs, dtype=float, usecols=(args.freqs_col - 1))
 	assert S.shape[0] == V.shape[1], "Files doesn't match!"
 	assert V.shape[0] == M, "Number of sites doesn't match (--loadings)!"
 	assert f.shape[0] == M, "Number of sites doesn't match (--freqs)!"
@@ -121,7 +121,7 @@ def main():
 		print("Loading full matrix into memory and projecting.")
 		E = np.zeros((M, N), dtype=float)
 		if args.pcaone:
-			functions.standardizeE_hap(E, G, f, d, args.threads)
+			functions.standardizeE_pcaone(E, G, f, d, args.threads)
 		else:
 			functions.standardizeE(E, G, f, d, args.threads)
 		del G
@@ -141,21 +141,24 @@ def main():
 			if l == (L-1): # Last batch
 				E = np.zeros((M-args.batch, N))
 			if args.pcaone:
-				functions.standardizeL_hap(E, G, f, d, m, args.threads)
+				functions.standardizeL_pcaone(E, G, f, d, m, args.threads)
 			else:
 				functions.standardizeL(E, G, f, d, m, args.threads)
 			U += np.dot(E.T, V[m:E.shape[0],:])
+			m += E.shape[0]
 		del E, V, f, d
 	
 	### Save projections to file
 	if args.raw:
 		np.savetxt(f"{args.out}.eigvecs", U, fmt="%.7f", delimiter="\t")
+		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs")
 	else:
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
 		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K)]
 		U = np.hstack((F, np.round(U, 7)))
 		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
 			header="\t".join(h), comments="")
+		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs2")
 
 
 
