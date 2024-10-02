@@ -3,13 +3,22 @@
 
 ## Usage
 ```bash
-projectionSVD --bfile new --freqs old.afreq --eigvals old.eigvals --loadings old.loadings --threads 32 --out new
+# Perform projection using PCAone output (use --pcaone for proper scaling)
+projectionSVD --bfile new --freqs old.afreq --eigvals old.eigvals --loadings old.loadings --threads 32 --out new --pcaone
 
 # Outputs eigenvectors of new dataset (new.eigvecs2)
 ```
 
 ### Options
-* `--pcaone`, indicate that files of from PCAone to perform proper scaling
+* `--pcaone`, indicate that files are from PCAone to perform proper scaling
 * `--freqs-col`, specify which column to use in frequency file (6)
 * `--batch`, process projection in batches of specified number of SNPs
 * `--raw`, only output eigenvectors without FID/IID
+
+## Installation
+```bash
+git clone https://github.com/Rosemeis/projectionSVD.git
+cd projectionSVD
+pip3 install .
+
+# The "projectionSVD" main caller will now be available

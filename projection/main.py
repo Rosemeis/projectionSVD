@@ -145,7 +145,7 @@ def main():
 				functions.standardizeL_pcaone(E, G, f, d, m, args.threads)
 			else:
 				functions.standardizeL(E, G, f, d, m, args.threads)
-			U += np.dot(E.T, V[m:E.shape[0],:])
+			U += np.dot(E.T, V[m:(m+E.shape[0]),:])
 			m += E.shape[0]
 		print("")
 		del E, V, f, d
