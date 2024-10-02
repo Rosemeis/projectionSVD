@@ -140,7 +140,7 @@ def main():
 		for l in range(L):
 			print(f"\rBatch {l+1}/{L}", end="", flush=True)
 			if l == (L-1): # Last batch
-				E = np.zeros((M-args.batch, N))
+				E = np.zeros((M-m, N))
 			if args.pcaone:
 				functions.standardizeL_pcaone(E, G, f, d, m, args.threads)
 			else:
