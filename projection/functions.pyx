@@ -51,4 +51,36 @@ cpdef void standardizeE_pcaone(double[:,::1] E, const unsigned char[:,::1] G, \
 			if G[j,i] == 9:
 				E[j,i] = 0.0
 			else:
-				E[j,i] = (G[j,i]/2.0 - f[j])/d[j]	
+				E[j,i] = (G[j,i]/2.0 - f[j])/d[j]
+
+# Standardize batched genotype matrix
+cpdef void standardizeL(double[:,::1] E, const unsigned char[:,::1] G, \
+		const double[::1] f, const double[::1] d, const int m, const int t) \
+		noexcept nogil:
+	cdef:
+		int M = E.shape[0]
+		int N = E.shape[1]
+		int i, j, k
+	for j in prange(M, num_threads=t):
+		k = m + j
+		for i in range(N):
+			if G[k,i] == 9:
+				E[k,i] = 0.0
+			else:
+				E[k,i] = (G[k,i] - 2.0*f[k])/d[k]
+
+# Standardize batched genotype matrix (PCAone format)
+cpdef void standardizeL_pcaone(double[:,::1] E, const unsigned char[:,::1] G, \
+		const double[::1] f, const double[::1] d, const int m, const int t) \
+		noexcept nogil:
+	cdef:
+		int M = E.shape[0]
+		int N = E.shape[1]
+		int i, j, k
+	for j in prange(M, num_threads=t):
+		k = m + j
+		for i in range(N):
+			if G[k,i] == 9:
+				E[k,i] = 0.0
+			else:
+				E[k,i] = (G[k,i]/2.0 - f[k])/d[k]		
