@@ -15,7 +15,7 @@ extensions = [
 
 setup(
 	name="projectionSVD",
-	version="0.1",
+	version="0.1.2",
 	description="Projection into SVD space",
 	author="Jonas Meisner",
 	packages=["projection"],

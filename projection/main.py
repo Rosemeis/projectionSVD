@@ -22,7 +22,7 @@ def extract_length(filename):
 ### Argparse
 parser = argparse.ArgumentParser(prog="projectionSVD")
 parser.add_argument("--version", action="version",
-	version="%(prog)s v0.1")
+	version="%(prog)s v0.1.2")
 parser.add_argument("-b", "--bfile", metavar="PLINK",
 	help="Prefix for target PLINK files (.bed, .bim, .fam)")
 parser.add_argument("-s", "--eigvals", metavar="FILE",
@@ -51,7 +51,7 @@ def main():
 		parser.print_help()
 		sys.exit()
 	print("-----------------------")
-	print(f"projectionSVD v0.1")
+	print(f"projectionSVD v0.1.2")
 	print("by J. Meisner")
 	print("-----------------------\n")
 	assert args.bfile is not None, "No input data (--bfile)!"
