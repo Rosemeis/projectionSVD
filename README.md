@@ -1,5 +1,5 @@
 # projectionSVD (v0.1.3)
-[![DOI](https://zenodo.org/badge/866019962.svg)](https://doi.org/10.5281/zenodo.13881622)\
+[![DOI](https://zenodo.org/badge/866019962.svg)](https://doi.org/10.5281/zenodo.13881621)\
 `projectionSVD` is a small command-line program written in Python/Cython to project a dataset onto a principal component space based on genotype data. It takes binary PLINK files as genotype input and works with PCA output from programs like `PLINK` and `PCAone`. `projectionSVD` requires estimated allele frequencies, eigenvalues and SNP loadings to perform the projection.
 
 ## Installation
