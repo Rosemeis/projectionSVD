@@ -4,8 +4,8 @@ import numpy
 
 extensions = [
 	Extension(
-		"projection.functions",
-		["projection/functions.pyx"],
+		"projection.shared",
+		["projection/shared.pyx"],
 		extra_compile_args=['-fopenmp', '-O3', '-g0', '-Wno-unreachable-code'],
 		extra_link_args=['-fopenmp'],
 		include_dirs=[numpy.get_include()],
@@ -15,18 +15,28 @@ extensions = [
 
 setup(
 	name="projectionSVD",
-	version="0.1.2",
-	description="Projection into SVD space",
+	version="0.1.3",
 	author="Jonas Meisner",
+	author_email="meisnerucph@gmail.com",
+	description="Projection into SVD space for genetic data",
+	long_description_content_type="text/markdown",
+	long_description=open("README.md").read(),
+	url="https://github.com/Rosemeis/projectionSVD",
+	classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Operating System :: OS Independent",
+        "Development Status :: 3 - Alpha",
+    ],
+	python_requires=">=3.7",
+	install_requires=[
+		"cython>3.0.0",
+		"numpy>2.0.0"
+	],
 	packages=["projection"],
 	entry_points={
 		"console_scripts": ["projectionSVD=projection.main:main"]
 	},
-	python_requires=">=3.7",
-	install_requires=[
-		"cython",
-		"numpy"
-	],
 	ext_modules=cythonize(extensions),
 	include_dirs=[numpy.get_include()]
 )

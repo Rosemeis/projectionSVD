@@ -1,6 +1,6 @@
 """
-fastmixture.
-Main caller. Ancestry estimation.
+projectionSVD.
+Main caller.
 """
 
 __author__ = "Jonas Meisner"
@@ -8,21 +8,12 @@ __author__ = "Jonas Meisner"
 # Libraries
 import argparse
 import os
-import subprocess
 import sys
-
-# Retrieve PLINK info
-def extract_length(filename):
-	process = subprocess.Popen(['wc', '-l', filename], stdout=subprocess.PIPE)
-	result, _ = process.communicate()
-	return int(result.split()[0])
-
-
 
 ### Argparse
 parser = argparse.ArgumentParser(prog="projectionSVD")
 parser.add_argument("--version", action="version",
-	version="%(prog)s v0.1.2")
+	version="%(prog)s v0.1.3")
 parser.add_argument("-b", "--bfile", metavar="PLINK",
 	help="Prefix for target PLINK files (.bed, .bim, .fam)")
 parser.add_argument("-s", "--eigvals", metavar="FILE",
@@ -51,7 +42,7 @@ def main():
 		parser.print_help()
 		sys.exit()
 	print("-----------------------")
-	print(f"projectionSVD v0.1.2")
+	print(f"projectionSVD v0.1.3")
 	print("by J. Meisner")
 	print("-----------------------\n")
 	assert args.bfile is not None, "No input data (--bfile)!"
@@ -61,17 +52,22 @@ def main():
 
 	# Control threads of external numerical libraries
 	os.environ["MKL_NUM_THREADS"] = str(args.threads)
+	os.environ["MKL_MAX_THREADS"] = str(args.threads)
 	os.environ["OMP_NUM_THREADS"] = str(args.threads)
+	os.environ["OMP_MAX_THREADS"] = str(args.threads)
 	os.environ["NUMEXPR_NUM_THREADS"] = str(args.threads)
+	os.environ["NUMEXPR_MAX_THREADS"] = str(args.threads)
 	os.environ["OPENBLAS_NUM_THREADS"] = str(args.threads)
+	os.environ["OPENBLAS_MAX_THREADS"] = str(args.threads)
 
 	# Load numerical libraries
 	import numpy as np
 	from math import ceil
 	from projection import functions
+	from projection import shared
 
 	### Read and prepare data
-	# Check input
+	# Reading PLINK files
 	assert os.path.isfile(f"{args.bfile}.bed"), "bed file doesn't exist!"
 	assert os.path.isfile(f"{args.bfile}.bim"), "bim file doesn't exist!"
 	assert os.path.isfile(f"{args.bfile}.fam"), "fam file doesn't exist!"
@@ -79,29 +75,17 @@ def main():
 	assert os.path.isfile(f"{args.loadings}"), "loadings file doesn't exist!"
 	assert os.path.isfile(f"{args.freqs}"), "freqs file doesn't exist!"
 	print("Reading data...", end="", flush=True)
-
-	# Finding length of .fam and .bim file
-	N = extract_length(f"{args.bfile}.fam")
-	M = extract_length(f"{args.bfile}.bim")
+	G, M, N = functions.readPlink(args.bfile, args.threads)
+	print(f"\rLoaded {N} samples and {M} SNPs.\n")
 
 	# Load smaller inputs
 	S = np.loadtxt(args.eigvals, dtype=float)
 	V = np.loadtxt(args.loadings, dtype=float)
-	f = np.loadtxt(args.freqs, dtype=float, usecols=(args.freqs_col - 1))
+	f = np.loadtxt(args.freqs, dtype=float, usecols=(args.freqs_col-1))
 	assert S.shape[0] == V.shape[1], "Files doesn't match!"
 	assert V.shape[0] == M, "Number of sites doesn't match (--loadings)!"
 	assert f.shape[0] == M, "Number of sites doesn't match (--freqs)!"
 	K = S.shape[0]
-
-	# Read .bed file
-	G = np.zeros((M, N), dtype=np.uint8)
-	N_bytes = ceil(N/4) # Length of bytes to describe N individuals
-	with open(f"{args.bfile}.bed", "rb") as bed:
-		B = np.fromfile(bed, dtype=np.uint8, offset=3)
-	B.shape = (M, N_bytes)
-	functions.expandGeno(B, G, args.threads)
-	del B
-	print(f"\rLoaded {N} samples and {M} SNPs.")
 
 	# Transform eigenvalues to singular values and multiply on V
 	if args.pcaone:
@@ -121,9 +105,9 @@ def main():
 		print("Loading full matrix into memory and projecting.")
 		E = np.zeros((M, N), dtype=float)
 		if args.pcaone:
-			functions.standardizeE_pcaone(E, G, f, d, args.threads)
+			shared.standardizeE_pcaone(E, G, f, d, args.threads)
 		else:
-			functions.standardizeE(E, G, f, d, args.threads)
+			shared.standardizeE(E, G, f, d, args.threads)
 		del G
 
 		# Projections
@@ -134,7 +118,7 @@ def main():
 		U = np.zeros((N, K))
 		E = np.zeros((args.batch, N))
 
-		### Standardize and project in batches
+		# Standardize and project in batches
 		m = 0
 		L = ceil(M/args.batch)
 		for l in range(L):
@@ -142,9 +126,9 @@ def main():
 			if l == (L-1): # Last batch
 				E = np.zeros((M-m, N))
 			if args.pcaone:
-				functions.standardizeL_pcaone(E, G, f, d, m, args.threads)
+				shared.standardizeL_pcaone(E, G, f, d, m, args.threads)
 			else:
-				functions.standardizeL(E, G, f, d, m, args.threads)
+				shared.standardizeL(E, G, f, d, m, args.threads)
 			U += np.dot(E.T, V[m:(m+E.shape[0]),:])
 			m += E.shape[0]
 		print("")
