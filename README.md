@@ -14,7 +14,7 @@ pip install .
 
 # Download source and install in new Conda environment
 git clone https://github.com/Rosemeis/projectionSVD.git
-conda env create -f environment.yml
+conda env create -f projectionSVD/environment.yml
 conda activate projectionSVD
 
 # The "projectionSVD" main caller will now be available
