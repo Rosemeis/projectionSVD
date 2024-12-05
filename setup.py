@@ -15,7 +15,7 @@ extensions = [
 
 setup(
 	name="projectionSVD",
-	version="0.1.3",
+	version="0.1.4",
 	author="Jonas Meisner",
 	author_email="meisnerucph@gmail.com",
 	description="Projection into SVD space for genetic data",
@@ -28,7 +28,8 @@ setup(
         "Operating System :: OS Independent",
         "Development Status :: 3 - Alpha",
     ],
-	python_requires=">=3.7",
+	ext_modules=cythonize(extensions),
+	python_requires=">=3.10",
 	install_requires=[
 		"cython>3.0.0",
 		"numpy>2.0.0"
@@ -37,6 +38,4 @@ setup(
 	entry_points={
 		"console_scripts": ["projectionSVD=projection.main:main"]
 	},
-	ext_modules=cythonize(extensions),
-	include_dirs=[numpy.get_include()]
 )
