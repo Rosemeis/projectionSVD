@@ -1,6 +1,6 @@
 import numpy as np
 from math import ceil
-from halko import shared
+from projection import shared
 
 ##### projectionSVD functions #####
 # Read PLINK files
