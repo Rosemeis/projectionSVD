@@ -33,5 +33,5 @@ projectionSVD --bfile new --freqs old.afreq --eigvals old.eigvals --loadings old
 
 ### Options
 * `--freqs-col`, specify which column to use in frequency file (6)
-* `--batch`, process projection in batches of specified number of SNPs
+* `--batch`, process projection in batches of specified number of SNPs (8192)
 * `--raw`, only output eigenvectors without FID/IID
