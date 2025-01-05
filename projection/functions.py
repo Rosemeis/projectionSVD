@@ -2,15 +2,14 @@ import numpy as np
 from math import ceil
 from projection import shared
 
-##### projectionSVD functions #####
 # Read PLINK files
-def readPlink(bfile, threads):
+def readPlink(bfile):
 	# Find length of fam-file
 	N = 0
 	with open(f"{bfile}.fam", "r") as fam:
 		for _ in fam:
 			N += 1
-	N_bytes = ceil(N/4) # Length of bytes to describe N individuals
+	N_bytes = ceil(N/4)
 
 	# Read .bed file
 	with open(f"{bfile}.bed", "rb") as bed:
@@ -21,6 +20,6 @@ def readPlink(bfile, threads):
 
 	# Read in full genotypes into 8-bit array
 	G = np.zeros((M, N), dtype=np.uint8)
-	shared.expandGeno(B, G, threads)
+	shared.expandGeno(B, G)
 	del B
 	return G, M, N

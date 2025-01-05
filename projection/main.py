@@ -13,7 +13,7 @@ import sys
 ### Argparse
 parser = argparse.ArgumentParser(prog="projectionSVD")
 parser.add_argument("--version", action="version",
-	version="%(prog)s v0.1.4")
+	version="%(prog)s v0.1.5")
 parser.add_argument("-b", "--bfile", metavar="PLINK",
 	help="Prefix for target PLINK files (.bed, .bim, .fam)")
 parser.add_argument("-s", "--eigvals", metavar="FILE",
@@ -26,14 +26,14 @@ parser.add_argument("-t", "--threads", metavar="INT", type=int, default=1,
 	help="Number of threads (1)")
 parser.add_argument("-o", "--out", metavar="OUTPUT", default="projection",
 	help="Prefix output name")
-parser.add_argument("--pcaone", action="store_true",
-	help="Change scales to fit PCAone output")
-parser.add_argument("--raw", action="store_true",
-	help="Only output projections without FID/IID")
-parser.add_argument("--batch", metavar="INT", type=int,
-	help="Process SNPs in batches of desired size")
+parser.add_argument("--batch", metavar="INT", type=int, default=8192,
+	help="Mini-batch size for projection (8192)")
 parser.add_argument("--freqs-col", metavar="INT", type=int, default=6,
 	help="Column number for frequencies (.afreq)")
+parser.add_argument("--raw", action="store_true",
+	help="Only output projections without FID/IID")
+
+
 
 ##### projectionSVD #####
 def main():
@@ -42,13 +42,18 @@ def main():
 		parser.print_help()
 		sys.exit()
 	print("-----------------------")
-	print(f"projectionSVD v0.1.4")
+	print(f"projectionSVD v0.1.5")
 	print("by J. Meisner")
 	print("-----------------------\n")
+
+	# Check input
 	assert args.bfile is not None, "No input data (--bfile)!"
 	assert args.eigvals is not None, "No eigenvalues provided (--eigvals)!"
 	assert args.loadings is not None, "No SNP loadings provided (--loadings)!"
 	assert args.freqs is not None, "No allele frequencies provided (--freqs)!"
+	assert args.threads > 0, "Please select a valid number of threads!"
+	assert args.batch > 0, "Please select a valid value for batch size!"
+	assert args.freqs_col >= 0, "Please select a valid value for freq column!"
 
 	# Control threads of external numerical libraries
 	os.environ["MKL_NUM_THREADS"] = str(args.threads)
@@ -75,7 +80,7 @@ def main():
 	assert os.path.isfile(f"{args.loadings}"), "loadings file doesn't exist!"
 	assert os.path.isfile(f"{args.freqs}"), "freqs file doesn't exist!"
 	print("Reading data...", end="", flush=True)
-	G, M, N = functions.readPlink(args.bfile, args.threads)
+	G, M, N = functions.readPlink(args.bfile)
 	print(f"\rLoaded {N} samples and {M} SNPs.\n")
 
 	# Load smaller inputs
@@ -88,51 +93,30 @@ def main():
 	K = S.shape[0]
 
 	# Transform eigenvalues to singular values and multiply on V
-	if args.pcaone:
-		S /= 2.0
 	S = np.sqrt(S*M)
 	V *= (1.0/S)
 	del S
 
 	# Specify denominator
-	if args.pcaone:
-		d = np.sqrt(f*(1-f))
-	else:
-		d = np.sqrt(2*f*(1-f))
+	d = 1.0/np.sqrt(2*f*(1-f))
 
 	### Perform projection
-	if args.batch is None:
-		print("Loading full matrix into memory and projecting.")
-		E = np.zeros((M, N), dtype=float)
-		if args.pcaone:
-			shared.standardizeE_pcaone(E, G, f, d, args.threads)
-		else:
-			shared.standardizeE(E, G, f, d, args.threads)
-		del G
+	print(f"Performing projection in batches of {args.batch} SNPs.")
+	U = np.zeros((N, K))
+	E = np.zeros((args.batch, N))
 
-		# Projections
-		U = np.dot(E.T, V)
-		del E, V, f, d
-	else:
-		print("Loading matrix into memory and projecting in batches.")
-		U = np.zeros((N, K))
-		E = np.zeros((args.batch, N))
-
-		# Standardize and project in batches
-		m = 0
-		L = ceil(M/args.batch)
-		for l in range(L):
-			print(f"\rBatch {l+1}/{L}", end="", flush=True)
-			if l == (L-1): # Last batch
-				E = np.zeros((M-m, N))
-			if args.pcaone:
-				shared.standardizeL_pcaone(E, G, f, d, m, args.threads)
-			else:
-				shared.standardizeL(E, G, f, d, m, args.threads)
-			U += np.dot(E.T, V[m:(m+E.shape[0]),:])
-			m += E.shape[0]
-		print("")
-		del E, V, f, d
+	# Standardize and project in batches
+	L = ceil(M/args.batch)
+	m = 0
+	for l in range(L):
+		print(f"\rBatch {l+1}/{L}", end="", flush=True)
+		if l == (L-1): # Last batch
+			E = np.zeros((M - m, N))
+		shared.standardizeE(E, G, f, d, m)
+		U += np.dot(E.T, V[m:(m + E.shape[0]),:])
+		m += E.shape[0]
+	print("")
+	del G, E, V, f, d
 	
 	### Save projections to file
 	if args.raw:
@@ -142,9 +126,9 @@ def main():
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
 		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K+1)]
 		U = np.hstack((F, np.round(U, 7)))
-		np.savetxt(f"{args.out}.eigvecs2", U, fmt="%s", delimiter="\t", \
+		np.savetxt(f"{args.out}.eigvecs", U, fmt="%s", delimiter="\t", \
 			header="\t".join(h), comments="")
-		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs2")
+		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs")
 
 
 

@@ -15,7 +15,7 @@ extensions = [
 
 setup(
 	name="projectionSVD",
-	version="0.1.4",
+	version="0.1.5",
 	author="Jonas Meisner",
 	author_email="meisnerucph@gmail.com",
 	description="Projection into SVD space for genetic data",
