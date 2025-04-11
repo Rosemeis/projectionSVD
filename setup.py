@@ -6,8 +6,8 @@ extensions = [
 	Extension(
 		"projection.shared",
 		["projection/shared.pyx"],
-		extra_compile_args=['-fopenmp', '-O3', '-g0', '-Wno-unreachable-code'],
-		extra_link_args=['-fopenmp'],
+		extra_compile_args=["-fopenmp", "-O3", "-ffast-math"],
+		extra_link_args=["-fopenmp", "-lm"],
 		include_dirs=[numpy.get_include()],
 		define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')]
 	)
@@ -15,7 +15,7 @@ extensions = [
 
 setup(
 	name="projectionSVD",
-	version="0.1.5",
+	version="0.2.0",
 	author="Jonas Meisner",
 	author_email="meisnerucph@gmail.com",
 	description="Projection into SVD space for genetic data",

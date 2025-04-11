@@ -13,7 +13,7 @@ import sys
 ### Argparse
 parser = argparse.ArgumentParser(prog="projectionSVD")
 parser.add_argument("--version", action="version",
-	version="%(prog)s v0.1.5")
+	version="%(prog)s v0.2.0")
 parser.add_argument("-b", "--bfile", metavar="PLINK",
 	help="Prefix for target PLINK files (.bed, .bim, .fam)")
 parser.add_argument("-s", "--eigvals", metavar="FILE",
@@ -42,7 +42,7 @@ def main():
 		parser.print_help()
 		sys.exit()
 	print("-----------------------")
-	print(f"projectionSVD v0.1.5")
+	print(f"projectionSVD v0.2.0")
 	print("by J. Meisner")
 	print("-----------------------\n")
 
@@ -84,9 +84,9 @@ def main():
 	print(f"\rLoaded {N} samples and {M} SNPs.\n")
 
 	# Load smaller inputs
-	S = np.loadtxt(args.eigvals, dtype=float)
-	V = np.loadtxt(args.loadings, dtype=float)
-	f = np.loadtxt(args.freqs, dtype=float, usecols=(args.freqs_col-1))
+	S = np.genfromtxt(args.eigvals, dtype=float)
+	V = np.genfromtxt(args.loadings, dtype=float)
+	f = np.genfromtxt(args.freqs, dtype=float, usecols=(args.freqs_col-1))
 	assert S.shape[0] == V.shape[1], "Files doesn't match!"
 	assert V.shape[0] == M, "Number of sites doesn't match (--loadings)!"
 	assert f.shape[0] == M, "Number of sites doesn't match (--freqs)!"
@@ -126,8 +126,7 @@ def main():
 		F = np.loadtxt(f"{args.bfile}.fam", dtype=np.str_, usecols=[0,1])
 		h = ["#FID", "IID"] + [f"PC{k}" for k in range(1, K+1)]
 		U = np.hstack((F, np.round(U, 7)))
-		np.savetxt(f"{args.out}.eigvecs", U, fmt="%s", delimiter="\t", \
-			header="\t".join(h), comments="")
+		np.savetxt(f"{args.out}.eigvecs", U, fmt="%s", delimiter="\t", header="\t".join(h), comments="")
 		print(f"\nSaved projected eigenvectors as {args.out}.eigvecs")
 
 
